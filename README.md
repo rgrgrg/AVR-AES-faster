@@ -50,7 +50,7 @@ All times in clock cycles for inline version (no rcall/ret)
 Requires RAM for precomputing all round keys (176/208/272 bytes)
 Key Size| S-Box | Encryption time | Decryption time | Key Expansion time
 --------|-------|-----------------|-----------------|--------------------
-128     | Flash |             2111|             2682|               748
+128     | Flash |           *2111*|           *2682*|               748
 128     | RAM   |             1951|             2522|               708 
 192     | Flash |             2543|             3242|               807 
 192     | RAM   |             2351|             3050|               775
@@ -58,13 +58,12 @@ Key Size| S-Box | Encryption time | Decryption time | Key Expansion time
 256     | RAM   |             2751|             3578|              1992
 
 ### TINY (version with small ram requirements)
-AES128 only
 Computes keys on the fly
+Key Size| S-Box | Encryption time | Decryption time | Key Expansion time
+--------|-------|-----------------|-----------------|-------------------
+128     | Flash | 2949            | 3538            |405/423
 
-Encryption: 2949
+Both encryption and decryption modify key im memory. The key must be rolled back (or overwritten with correct value) before next operation.
+Decryption after encryption (or vice versa) does not need key modification.
 
-Decryption: 3538
-
-* Generating key for decryption/roll-back after decryption: 405
-* Rolling-back key after encryption: 423
 
