@@ -16,11 +16,11 @@ Variant       | Key size | Bytes Flash | Bytes RAM | Bytes stack
 --------------|----------|-------------|-----------|------------
 Flash         | 128      | 1738        | 176       | 0
 RAM           | 128      | 1738        | 688       | 0
-Tiny (Flash)  | 128      | 2158        | _16_      | 0
-Flash         | 192      | 1772        | 240       | 0
-RAM           | 192      | 1772        | 752       | 0
-Flash         | 256*     | 1776        | 272       | 0
-RAM           | 256*     | 1776        | 784       | 0
+Tiny (Flash)  | 128      | 2158        | **16**    | 0
+Flash         | 192      | 1772        | 208       | 0
+RAM           | 192      | 1772        | 720       | 0
+Flash         | 256*     | 1776        | 240       | 0
+RAM           | 256*     | 1776        | 752       | 0
 
 
 * 256-bit version can also be used for other key sizes
@@ -47,10 +47,10 @@ InvSBox|256   | 256
 ## Test results
 All times in clock cycles for inline version (no rcall/ret)
 ### NORMAL (Version with precomputed keys)
-Requires RAM for precomputing all round keys (176/208/272 bytes)
+Requires RAM for precomputing all round keys (176/208/240 bytes)
 Key Size| S-Box | Encryption time | Decryption time | Key Expansion time
 --------|-------|-----------------|-----------------|--------------------
-128     | Flash |           *2111*|           *2682*|               748
+128     | Flash |         **2111**|         **2682**|               748
 128     | RAM   |             1951|             2522|               708 
 192     | Flash |             2543|             3242|               807 
 192     | RAM   |             2351|             3050|               775
@@ -63,7 +63,7 @@ Key Size| S-Box | Encryption time | Decryption time | Key Expansion time
 --------|-------|-----------------|-----------------|-------------------
 128     | Flash | 2949            | 3538            |405/423
 
-Both encryption and decryption modify key im memory. The key must be rolled back (or overwritten with correct value) before next operation.
+**Both encryption and decryption modify key im memory. The key must be rolled back (or overwritten with correct value) before next operation.**
 Decryption after encryption (or vice versa) does not need key modification.
 
 
