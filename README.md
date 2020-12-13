@@ -44,10 +44,10 @@ Decryption after encryption (or vice versa) does not need key modification.
 
 Pure assembler version, inlined, all input parameters set, in place key expansion.
 
-# Totals
+### Totals
 
-Variant       | Key size | Bytes Flash | Bytes RAM | Bytes stack
---------------|----------|-------------|-----------|------------
+Variant       | Key size | Bytes Flash | Bytes RAM | Bytes on stack
+--------------|----------|-------------|-----------|---------------
 Flash         | 128      | 1738        | 176       | 0
 RAM           | 128      | 1738        | 688       | 0
 Tiny (Flash)  | 128      | 2158        | **16**    | 0
@@ -56,10 +56,9 @@ RAM           | 192      | 1772        | 720       | 0
 Flash         | 256*     | 1776        | 240       | 0
 RAM           | 256*     | 1776        | 752       | 0
 
-
 * 256-bit version can also be used for other key sizes
 
-# By Function
+### By Function
 Variant       | Operation     | Key size | Bytes
 --------------|---------------|----------|---------
 Flash/RAM     | Encryption    | Any      | 468
@@ -72,11 +71,62 @@ Tiny (Flash)  | Decryption    | 128      | 872
 Tiny (Flash)  | Rewind K0->K10| 128      | 96
 Tiny (Flash)  | Rewind K10->K0| 128      | 96
 
+All functions can be inlined.
+
 Lookup tables:
 Table  | Size | Alignment
 -------| -----|----------
 SBox   |256   | 256
 InvSBox|256   | 256     
+
+## How to use
+
+### Flash version
+
+```cplusplus
+uint8_t key[AES128_KEYSIZE];   //encryption key
+uint8_t xkey[AES128_XKEYSIZE]; //precomputed round keys
+uint8_t plaintext[AES_BLOCKSIZE]; 
+uint8_t ciphertext[AES_BLOCKSIZE]; 
+
+//One time (per key) initialization
+AES_ExpandKey128_F(&key[0], &xtest[0]);
+
+//Encryption
+AES_Encrypt128_F(&plaintext[0], &ciphertext[0], &xkey[0]);
+
+//Decryption
+AES_Decrypt128_F(&ciphertext[0], &plaintext[0], &xkey[0]);
+```
+
+### RAM version
+```cplusplus
+uint8_t AES_SBox_R   [256]; // SBox - must be global
+uint8_t AES_InvSBox_R[256]; // InvSBox - must be global
+
+uint8_t key[AES128_KEYSIZE];   //encryption key
+uint8_t xkey[AES128_XKEYSIZE]; //precomputed round keys
+uint8_t plaintext[AES_BLOCKSIZE]; 
+uint8_t ciphertext[AES_BLOCKSIZE]; 
+
+//One time initialization
+memcpy_P(AES_SBox_R   , AES_SBox_F   , sizeof(AES_SBox_R   ));
+memcpy_P(AES_InvSBox_R, AES_InvSBox_F, sizeof(AES_InvSBox_R));
+
+//One time (per-key) initialization
+AES_ExpandKey128_F(&key[0], &xtest[0]);
+
+//Encryption
+AES_Encrypt128_F(&plaintext[0], &ciphertext[0], &xkey[0]);
+
+//Decryption
+AES_Decrypt128_F(&ciphertext[0], &plaintext[0], &xkey[0]);
+```
+
+### Tiny version
+
+### Tiny version (minimal RAM usage)
+
 
 
 
