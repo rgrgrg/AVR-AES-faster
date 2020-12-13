@@ -6,11 +6,12 @@ Fast AES library for 8-bit AVR processors
 3. Ability to calculate round keys on fly to save RAM (16 bytes RAM required for temporary key, can be "rolled back" after use) for AES128
 4. Decryption uses *Inverse Cipher*, not *Equivalent Inverse Cipher* - no need for InvMixColumn step for round keys (faster operation, same intermediate keys for encryption and decryption)
 5. Seems to be faster than:
-   1. [rijndaelfast.asm](http://point-at-infinity.org/avraes/)
-   2. [Fast Software AES Encryption](https://cseweb.ucsd.edu/~dstefan/pubs/osvik:2010:fast.pdf)
-   3. [AVR CryptoLib](http://www.emsign.nl/)
-   4. [AVR-Crypto-Lib](https://wiki.das-labor.org/w/AVR-Crypto-Lib/en#Blockchiphers)
-   5. Any pure C/C++ implementation
+   1. ["AVRAES: The AES block cipher on AVR controllers" (aka rijndaelfast.asm)](http://point-at-infinity.org/avraes/)
+   2. ["Fast Software AES Encryption"](https://cseweb.ucsd.edu/~dstefan/pubs/osvik:2010:fast.pdf)
+   3. ["AVR CryptoLib"](http://www.emsign.nl/)
+   4. ["AVR-Crypto-Lib"](https://wiki.das-labor.org/w/AVR-Crypto-Lib/en#Blockchiphers)
+   5. ["Implementations of low cost block ciphers in Atmel AVR devices."](https://perso.uclouvain.be/fstandae/source_codes/lightweight_ciphers/) (*tiny* version)
+   6. Any pure C/C++ implementation
    
 ## Speedtest results
 All times in clock cycles for inline version (no rcall/ret)
