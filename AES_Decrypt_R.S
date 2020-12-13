@@ -16,7 +16,7 @@
 
 #============================================================================
 #
-# AES_Decrypt_R
+# AES_Decrypt_int_R
 #
 # AES Decryption -  S-box in RAM
 #
@@ -61,6 +61,69 @@
 
 		.global AES_Decrypt_R
 AES_Decrypt_R:
+#ifdef AES_BENCHMARK
+		lds  r30,_SFR_MEM_ADDR(TCNT1L)
+		sts  benchmark_data+0,r30
+		lds  r30,_SFR_MEM_ADDR(TCNT1H)
+		sts  benchmark_data+1,r30
+#endif
+#Move to one byte beyond end of key
+		mov  r0,ROUNDS
+		inc  r0
+		lsl  r0
+		lsl  r0
+		lsl  r0
+		lsl  r0
+		add  r20,r0
+		adc  r21,r1
+		rjmp AES_Decrypt_int_R
+
+		.section .text.AES_Decrypt256_R,"ax",@progbits
+
+		.global AES_Decrypt256_R
+AES_Decrypt256_R:
+#ifdef AES_BENCHMARK
+		lds  r30,_SFR_MEM_ADDR(TCNT1L)
+		sts  benchmark_data+0,r30
+		lds  r30,_SFR_MEM_ADDR(TCNT1H)
+		sts  benchmark_data+1,r30
+#endif
+		ldi  ROUNDS,14
+		subi r20,-240
+		sbci r21,-1
+		rjmp AES_Decrypt_int_R
+
+		.section .text.AES_Decrypt192_R,"ax",@progbits
+
+		.global AES_Decrypt192_R
+AES_Decrypt192_R:
+#ifdef AES_BENCHMARK
+		lds  r30,_SFR_MEM_ADDR(TCNT1L)
+		sts  benchmark_data+0,r30
+		lds  r30,_SFR_MEM_ADDR(TCNT1H)
+		sts  benchmark_data+1,r30
+#endif
+		ldi  ROUNDS,12
+		subi r20,-208
+		sbci r21,-1
+		rjmp AES_Decrypt_int_R
+
+		.section .text.AES_Decrypt128_R,"ax",@progbits
+
+		.global AES_Decrypt128_R
+AES_Decrypt128_R:
+#ifdef AES_BENCHMARK
+		lds  r30,_SFR_MEM_ADDR(TCNT1L)
+		sts  benchmark_data+0,r30
+		lds  r30,_SFR_MEM_ADDR(TCNT1H)
+		sts  benchmark_data+1,r30
+#endif
+		ldi  ROUNDS,10
+		subi r20,-176
+		sbci r21,-1
+
+		.global AES_Decrypt_int_R
+AES_Decrypt_int_R:
 		push ST20
 		push ST30
 		push ST01
@@ -95,23 +158,13 @@ AES_Decrypt_R:
 		ld   ST23,XKEYPTR+
 		ld   ST33,XKEYPTR+
 		movw XKEYPTR_L,r20
-		mov  TMP0,ROUNDS
-		eor  TMP1,TMP1
-		inc  TMP0
-		lsl  TMP0
-		lsl  TMP0
-		lsl  TMP0
-		lsl  TMP0
-		rol  TMP1
-		add  XKEYPTR_L,TMP0
-		adc  XKEYPTR_H,TMP1
 #ifdef AES_BENCHMARK
 		lds  r30,_SFR_MEM_ADDR(TCNT1L)
 		sts  benchmark_data+2,r30
 		lds  r30,_SFR_MEM_ADDR(TCNT1H)
 		sts  benchmark_data+3,r30
-AES_Decrypt_R_start1:
-		.global AES_Decrypt_R_start1
+AES_Decrypt_int_R_start1:
+		.global AES_Decrypt_int_R_start1
 #endif
 #------------- Real function starts here -------------
 		ldi   zh,hi8(AES_InvSBox_R)
@@ -514,8 +567,8 @@ AES_Decrypt_R_start1:
 		eor  ST00,TMP4
 #-------------- Real function ends here --------------
 #ifdef AES_BENCHMARK
-AES_Decrypt_R_end1:
-		.global AES_Decrypt_R_end1
+AES_Decrypt_int_R_end1:
+		.global AES_Decrypt_int_R_end1
 		lds  r24,_SFR_MEM_ADDR(TCNT1L)
 		sts  benchmark_data+4,r24
 		lds  r24,_SFR_MEM_ADDR(TCNT1H)
@@ -555,13 +608,19 @@ AES_Decrypt_R_end1:
 		pop  ST30
 		pop  ST20
 		eor   r1, r1
+#ifdef AES_BENCHMARK
+		lds  r30,_SFR_MEM_ADDR(TCNT1L)
+		sts  benchmark_data+6,r30
+		lds  r30,_SFR_MEM_ADDR(TCNT1H)
+		sts  benchmark_data+7,r30
+#endif
 		ret
 #ifdef AES_BENCHMARK
-AES_Decrypt_R_end:
-		.global AES_Decrypt_R_end
+AES_Decrypt_int_R_end:
+		.global AES_Decrypt_int_R_end
 #endif
 
-		.size AES_Decrypt_R,.-AES_Decrypt_R
+		.size AES_Decrypt_int_R,.-AES_Decrypt_int_R
 
 #undef ST00
 #undef ST10

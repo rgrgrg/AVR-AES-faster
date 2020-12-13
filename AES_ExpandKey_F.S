@@ -48,6 +48,12 @@
 
 		.global AES_ExpandKey_F
 AES_ExpandKey_F:
+#ifdef AES_BENCHMARK
+		lds  r30,_SFR_MEM_ADDR(TCNT1L)
+		sts  benchmark_data+0,r30
+		lds  r30,_SFR_MEM_ADDR(TCNT1H)
+		sts  benchmark_data+1,r30
+#endif
 		push ST2X
 		push ST3X
 		push I
@@ -156,6 +162,12 @@ AES_ExpandKey_F_end1:
 		pop  ST3X
 		pop  ST2X
 		eor   r1, r1
+#ifdef AES_BENCHMARK
+		lds  r30,_SFR_MEM_ADDR(TCNT1L)
+		sts  benchmark_data+6,r30
+		lds  r30,_SFR_MEM_ADDR(TCNT1H)
+		sts  benchmark_data+7,r30
+#endif
 		ret
 #ifdef AES_BENCHMARK
 AES_ExpandKey_F_end:

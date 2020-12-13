@@ -58,6 +58,9 @@ extern "C" {
 
     extern void AES_Decrypt_F(const void *in, void *out, const void *xkey, 
 	    uint8_t nr);
+    extern void AES_Decrypt128_F(const void *in, void *out, const void *xkey);
+    extern void AES_Decrypt192_F(const void *in, void *out, const void *xkey);
+    extern void AES_Decrypt256_F(const void *in, void *out, const void *xkey);
 
     extern void AES_ExpandKey128_F(const void *keyin, void *xkeyout);
 
@@ -72,6 +75,9 @@ extern "C" {
 
     extern void AES_Decrypt_R(const void *in, void *out, const void *xkey, 
 	    uint8_t nr);
+    extern void AES_Decrypt128_R(const void *in, void *out, const void *xkey);
+    extern void AES_Decrypt192_R(const void *in, void *out, const void *xkey);
+    extern void AES_Decrypt256_R(const void *in, void *out, const void *xkey);
 
     extern void AES_ExpandKey128_R(const void *keyin, void *xkeyout);
 
@@ -91,8 +97,9 @@ extern "C" {
   //#endif
 #ifdef __cplusplus
 };
+#endif
 
-
+// constant size Encrypt
 inline void AES_Encrypt128_F(const void *in, void *out, const void *xkey)
 {
     AES_Encrypt_F(in,out,xkey, AES128_Nr);
@@ -106,23 +113,6 @@ inline void AES_Encrypt192_F(const void *in, void *out, const void *xkey)
 inline void AES_Encrypt256_F(const void *in, void *out, const void *xkey)
 {
     AES_Encrypt_F(in,out,xkey, AES256_Nr);
-}
-
-
-
-inline void AES_Decrypt128_F(const void *in, void *out, const void *xkey)
-{
-    AES_Decrypt_F(in,out,xkey, AES128_Nr);
-}
-
-inline void AES_Decrypt192_F(const void *in, void *out, const void *xkey)
-{
-    AES_Decrypt_F(in,out,xkey, AES192_Nr);
-}
-
-inline void AES_Decrypt256_F(const void *in, void *out, const void *xkey)
-{
-    AES_Decrypt_F(in,out,xkey, AES256_Nr);
 }
 
 
@@ -141,24 +131,7 @@ inline void AES_Encrypt256_R(const void *in, void *out, const void *xkey)
     AES_Encrypt_R(in,out,xkey, AES256_Nr);
 }
 
-
-
-inline void AES_Decrypt128_R(const void *in, void *out, const void *xkey)
-{
-    AES_Decrypt_R(in,out,xkey, AES128_Nr);
-}
-
-inline void AES_Decrypt192_R(const void *in, void *out, const void *xkey)
-{
-    AES_Decrypt_R(in,out,xkey, AES192_Nr);
-}
-
-inline void AES_Decrypt256_R(const void *in, void *out, const void *xkey)
-{
-    AES_Decrypt_R(in,out,xkey, AES256_Nr);
-}
-
-
+// constant size ExpandKey
 inline void AES_ExpandKey256_F(const void *keyin, void *xkeyout)
 {
     AES_ExpandKey_F(keyin,xkeyout, AES256_Nk, AES256_Nr);
@@ -169,5 +142,4 @@ inline void AES_ExpandKey256_R(const void *keyin, void *xkeyout)
     AES_ExpandKey_R(keyin,xkeyout, AES256_Nk, AES256_Nr);
 }
 
-#endif
 #endif

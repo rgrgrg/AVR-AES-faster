@@ -9,5 +9,5 @@
 #                                                                           #
 #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#*/
 
-//#warning  AES_BENCHMARK "AES_BENCHMARK set. You probably don't want this"
+//#warning "AES_BENCHMARK set. You probably don't want this"
 //#define AES_BENCHMARK 1

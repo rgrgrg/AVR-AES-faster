@@ -91,11 +91,53 @@ const test_vector_t test_vectors[] PROGMEM = {
 
 #ifdef AES_BENCHMARK
 extern "C" {
-  extern int16_t benchmark_sizes[];
+  extern const void *benchmark_sizes[];
 }
 
 uint16_t benchmark_data[4];
-//void print_cycles();
+void print_sizes()
+{
+  char buf[24];
+  printf_P(PSTR("# Function sizes\n\n"
+                "Function name          | asm | abi | +abi\n"
+                "-----------------------|-----|-----|-----\n"));
+  const void **p;
+  p=&benchmark_sizes[0];
+  while (true)
+  {
+    const char *   fname = (const char *)pgm_read_ptr(p++);
+    if (!fname)
+      return;
+
+    uint16_t cstart = pgm_read_word(p++);
+    uint16_t astart = pgm_read_word(p++);
+    uint16_t aend   = pgm_read_word(p++);
+    uint16_t cend   = pgm_read_word(p++);
+    uint16_t asize  = aend - astart;
+    // Overhead for time measurements AES_BENCHMARK: 
+    // 4 bytes for lds, 4 bytes for sts, always in pairs, 4 times per function
+    uint16_t csize = cend - cstart - (4 + 4) * 2 * 4;
+
+    strncpy_P(&buf[0],fname,sizeof(buf));
+    printf_P(PSTR("%23s|%5d|%5d|%5d\n"), 
+	       buf, asize, csize, csize - asize);
+
+  }
+}
+
+
+void print_cycles(uint16_t wrapped_params)
+{
+  //One measurement takes 8 cycles
+  //rcall + return takes  8 cycles
+  uint16_t asmtime = benchmark_data[2] - benchmark_data[1] - 8*1;
+  uint16_t alltime = benchmark_data[3] - benchmark_data[0] - 8*3+8;
+  alltime+=wrapped_params; // Any parameter from inline function takes 
+                           // one clock cycle (ldi)
+  printf_P(PSTR(" asm=%4d, with_abi=%4d +abi=%3d\n"),
+		 asmtime,  alltime, alltime-asmtime);
+}
+
 #endif
 
 
@@ -158,6 +200,7 @@ bool test_expansion()
       test_ok = true;
       uint8_t test_case = 0; //none
       const char *fname = PSTR("None");
+      uint8_t wrapped_params=0;
 
       memset(&xtest[0], TEST_MAGIC, sizeof(xtest));
       memset(&testblock[0], TEST_MAGIC, sizeof(testblock));
@@ -200,6 +243,7 @@ bool test_expansion()
           {
             AES_ExpandKey256_F(&key[0], &xtest[0]);
             fname = PSTR("AES_ExpandKey256_F");
+            wrapped_params = 2;
             test_case = 1;
           }
           break;
@@ -223,6 +267,7 @@ bool test_expansion()
           {
             AES_ExpandKey256_R(&key[0], &xtest[0]);
             fname = PSTR("AES_ExpandKey256_R");
+            wrapped_params = 2;
             test_case = 1;
           }
           break;
@@ -295,7 +340,8 @@ bool test_expansion()
           else
           {
 #ifdef AES_BENCHMARK
-            printf_P(PSTR("%-23s: OK, %5d cycles\n"), fname_buf,benchmark_data[2]-benchmark_data[1]-8);
+            printf_P(PSTR("%-23s: OK, "), fname_buf);
+	          print_cycles(wrapped_params);
 #else
             printf_P(PSTR("%-23s: OK\n"), fname_buf);
 #endif
@@ -318,7 +364,8 @@ bool test_expansion()
           if (test_ok)
           {
 #ifdef AES_BENCHMARK
-            printf_P(PSTR("%-23s: OK, %5d cycles\n"), fname_buf,benchmark_data[2]-benchmark_data[1]-8);
+            printf_P(PSTR("%-23s: OK, "), fname_buf);
+	          print_cycles(wrapped_params);
 #else
             printf_P(PSTR("%-23s: OK\n"), fname_buf);
 #endif
@@ -377,6 +424,7 @@ bool test_encryption()
       const char *fname = PSTR("None");
       test_ok = true;
       uint8_t test_case = 0;
+      uint8_t wrapped_params=0;
 
       memcpy_P(&xkey[0], pgm_read_ptr(&test_vectors[i].key), min(sizeof(xkey), 4 * nk));  
       TestAES_ExpandKey(&xkey[0], &xkey[0], nk, nr); //Slow but good
@@ -406,18 +454,21 @@ bool test_encryption()
           {
             AES_Encrypt128_F(&plaintext[0],&outblock[0],&xkey[0]);
             fname = PSTR("AES_Encrypt128_F");
+            wrapped_params = 1;
             test_case = 1;
           }
           else if (nk == 6)
           {
             AES_Encrypt192_F(&plaintext[0],&outblock[0],&xkey[0]);
             fname = PSTR("AES_Encrypt192_F");
+            wrapped_params = 1;
             test_case = 1;
           }
           else if (nk == 8)
           {
             AES_Encrypt256_F(&plaintext[0],&outblock[0],&xkey[0]);
             fname = PSTR("AES_Encrypt256_F");
+            wrapped_params = 1;
             test_case = 1;
           }
           break;
@@ -428,18 +479,21 @@ bool test_encryption()
           {
             AES_Encrypt128_R(&plaintext[0],&outblock[0],&xkey[0]);
             fname = PSTR("AES_Encrypt128_R");
+            wrapped_params = 1;
             test_case = 1;
           }
           else if (nk == 6)
           {
             AES_Encrypt192_R(&plaintext[0],&outblock[0],&xkey[0]);
             fname = PSTR("AES_Encrypt192_R");
+            wrapped_params = 1;
             test_case = 1;
           }
           else if (nk == 8)
           {
             AES_Encrypt256_R(&plaintext[0],&outblock[0],&xkey[0]);
             fname = PSTR("AES_Encrypt256_R");
+            wrapped_params = 1;
             test_case = 1;
           }
           break;
@@ -517,7 +571,6 @@ bool test_encryption()
           {
             AES_ExpandLastKey128_T(&xkey[0],&xkey[0]); //Example how to use 
             AES_Decrypt128_T(&ciphertext[0],&outblock[0],&xkey[0]);
-            
             fname = PSTR("AES_Decrypt_T");
             test_case = 2;
           }
@@ -551,7 +604,8 @@ bool test_encryption()
         else
         {
 #ifdef AES_BENCHMARK
-          printf_P(PSTR("%-23s: OK, %5d cycles\n"), fname_buf,benchmark_data[2]-benchmark_data[1]-8);
+          printf_P(PSTR("%-23s: OK, "), fname_buf);
+          print_cycles(wrapped_params);
 #else
           printf_P(PSTR("%-23s: OK\n"), fname_buf);
 #endif
@@ -575,49 +629,6 @@ uint32_t rev(const uint8_t *x)
 }
 
 
-void print_sizes(uint16_t p)
-{
-  char buf[30], buf2[80];
-  while (true)
-  {
-    const char *   fname = (const char *)pgm_read_ptr(p);
-    if (!fname)
-      return;
-
-    uint16_t cstart = pgm_read_word(p + 2);
-    uint16_t astart = pgm_read_word(p + 4);
-    uint16_t aend  = pgm_read_word(p + 6);
-    uint16_t cend  = pgm_read_word(p + 8);
-    uint16_t asize = aend - astart;
-    uint16_t csize = cend - cstart - (4 + 4) * 2 * 2;
-    p += 10;
-    strcpy_P(&buf[0], fname);
-    sprintf(buf2, "%24s|0x%04x|%5d|%5d|%5d\n", buf, cstart, asize, csize, csize - asize); // (lds(4b)+sts(4b))*2 * 2
-    Serial.print(&buf2[0]);
-
-  }
-}
-/*
-void print_cycles()
-{
-  Serial.print(F("Cycles="));
-  for (uint8_t i = 0; i < 4; i++)
-  {
-    Serial.print(benchmark_data[i]);
-    Serial.print(" ");
-  }
-  Serial.println();
-  uint16_t asmtime = benchmark_data[2] - benchmark_data[1] - 8;
-  uint16_t alltime = benchmark_data[3] - benchmark_data[0] - 24;
-  Serial.print(F("ASM="));
-  Serial.print(asmtime);
-  Serial.print(F(", C="));
-  Serial.print(alltime);
-  Serial.print(F(", C-ASM="));
-  Serial.println(alltime - asmtime);
-  Serial.println();
-}
-*/
 
 // Use more programmer-friendly I/O
 // https://www.nongnu.org/avr-libc/user-manual/group__avr__stdio.html
@@ -646,7 +657,7 @@ void setup() {
     " AVR-AES-Faster test sketch (c) 2020 Radosław Gancarz\n\n"
 #ifndef AES_BENCHMARK    
     " Hint: Set AES_BENCHMARK in AVR-AES-Faster-devel.h and rebuild to see\n"
-    "       timing information for low level part (excluding C/C++ ABI\n"
+    "       timing information for low level part (inccluding C/C++ ABI\n"
     "       overhead)\n\n"
 #endif    
     ));
@@ -673,9 +684,9 @@ void setup() {
     printf_P(PSTR("+ ++ +++ ++++ +++++ ++ ALL TEST PASSED SUCCESSFULLY! ++ +++++ ++++ +++ ++ +\n\n"));
   else
     printf_P(PSTR("-  FAILED !!!  FAILED !!!  FAILED !!!  FAILED !!!  FAILED !!!  FAILED !!! -\n\n"));
-
-  //print_sizes((uint16_t)benchmark_sizes);
-
+#ifdef AES_BENCHMARK
+  print_sizes();
+#endif
 }
 
 void loop() {}
