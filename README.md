@@ -12,6 +12,7 @@ Fast AES library for 8-bit AVR processors
    4. ["AVR-Crypto-Lib"](https://wiki.das-labor.org/w/AVR-Crypto-Lib/en#Blockchiphers)
    5. ["Implementations of low cost block ciphers in Atmel AVR devices."](https://perso.uclouvain.be/fstandae/source_codes/lightweight_ciphers/) (*tiny* version)
    6. Any pure C/C++ implementation
+6. Test sketch with example vectors from FIPS 197 for Arduino Uno and independent pure C implementation for self check.
    
 ## Speedtest results
 All times in clock cycles for "pure" inline version (no rcall/ret, all arguments loaded to registers). 
