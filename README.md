@@ -81,6 +81,8 @@ InvSBox|256   | 256
 
 ## How to use C/C++ version
 
+**Remember: [Use cryptography correctly](https://cybersecurity.ieee.org/blog/2015/11/13/use-cryptography-correctly/).**
+
 ### Flash version
 Required variables:
 ```c++
