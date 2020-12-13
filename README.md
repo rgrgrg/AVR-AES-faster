@@ -79,54 +79,115 @@ Table  | Size | Alignment
 SBox   |256   | 256
 InvSBox|256   | 256     
 
-## How to use
+## How to use C/C++ version
 
 ### Flash version
-
-```cplusplus
-uint8_t key[AES128_KEYSIZE];   //encryption key
+Required variables:
+```c++
+uint8_t key [AES128_KEYSIZE];   //encryption key
 uint8_t xkey[AES128_XKEYSIZE]; //precomputed round keys
-uint8_t plaintext[AES_BLOCKSIZE]; 
+uint8_t plaintext [AES_BLOCKSIZE]; 
 uint8_t ciphertext[AES_BLOCKSIZE]; 
+```
 
-//One time (per key) initialization
+One-time (per key) initialization:
+```c++
 AES_ExpandKey128_F(&key[0], &xtest[0]);
+```
 
-//Encryption
+Encryption:
+```c++
 AES_Encrypt128_F(&plaintext[0], &ciphertext[0], &xkey[0]);
+```
 
-//Decryption
+Decryption:
+```c++
 AES_Decrypt128_F(&ciphertext[0], &plaintext[0], &xkey[0]);
 ```
 
 ### RAM version
-```cplusplus
-uint8_t AES_SBox_R   [256]; // SBox - must be global
+Required variables:
+```c++
+uint8_t AES_SBox_R   [256];  // SBox - must be global
 uint8_t AES_InvSBox_R[256]; // InvSBox - must be global
 
-uint8_t key[AES128_KEYSIZE];   //encryption key
+uint8_t key [AES128_KEYSIZE];   //encryption key
 uint8_t xkey[AES128_XKEYSIZE]; //precomputed round keys
-uint8_t plaintext[AES_BLOCKSIZE]; 
+uint8_t plaintext [AES_BLOCKSIZE]; 
 uint8_t ciphertext[AES_BLOCKSIZE]; 
+```
 
-//One time initialization
+One time initialization (global):
+```c++
 memcpy_P(AES_SBox_R   , AES_SBox_F   , sizeof(AES_SBox_R   ));
 memcpy_P(AES_InvSBox_R, AES_InvSBox_F, sizeof(AES_InvSBox_R));
+```
 
-//One time (per-key) initialization
-AES_ExpandKey128_F(&key[0], &xtest[0]);
+One time (per-key) initialization:
+```c++
+AES_ExpandKey128_R(&key[0], &xtest[0]);
+```
 
-//Encryption
-AES_Encrypt128_F(&plaintext[0], &ciphertext[0], &xkey[0]);
+Encryption:
+```c++
+AES_Encrypt128_R(&plaintext[0], &ciphertext[0], &xkey[0]);
+```
 
-//Decryption
-AES_Decrypt128_F(&ciphertext[0], &plaintext[0], &xkey[0]);
+Decryption:
+```c++
+AES_Decrypt128_R(&ciphertext[0], &plaintext[0], &xkey[0]);
 ```
 
 ### Tiny version
+Uses 48 bytes per key.
+
+Required variables:
+```c++
+uint8_t key   [AES128_KEYSIZE];    //encryption key
+uint8_t dkey  [AES128_KEYSIZE];   //decryption key
+uint8_t tmpkey[AES128_KEYSIZE];  //working copy
+
+uint8_t plaintext [AES_BLOCKSIZE]; 
+uint8_t ciphertext[AES_BLOCKSIZE]; 
+```
+
+One time (per-key) initialization:
+```c++
+AES_ExpandLastKey128_T(&key[0], &dkey[0]);
+```
+
+Encryption (each block):
+```c++
+memcpy(&tmpkey[0],&key[0],sizeof(tmpkey));
+AES_Encrypt128_T(&plaintext[0], &ciphertext[0], &tmpkey[0]);
+```
+
+Decryption (each block):
+```c++
+memcpy(&tmpkey[0],&dkey[0],sizeof(tmpkey));
+AES_Decrypt128_T(&ciphertext[0], &plaintext[0], &tmpkey[0]);
+```
 
 ### Tiny version (minimal RAM usage)
+Uses 16 bytes per key.
+
+Required variables:
+```c++
+uint8_t key   [AES128_KEYSIZE];    //encryption key
+
+uint8_t plaintext [AES_BLOCKSIZE]; 
+uint8_t ciphertext[AES_BLOCKSIZE]; 
+```
 
 
+Encryption (each block):
+```c++
+AES_Encrypt128_T(&plaintext[0], &ciphertext[0], &key[0]);
+AES_ExpandFirstKey128_T(&key[0], &key[0]);
+```
 
-
+Decryption (each block):
+```c++
+AES_ExpandLastKey128_T(&key[0], &key[0]);
+AES_Decrypt128_T(&ciphertext[0], &plaintext[0], &key[0]);
+```
