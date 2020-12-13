@@ -14,8 +14,11 @@ Fast AES library for 8-bit AVR processors
    6. Any pure C/C++ implementation
    
 ## Speedtest results
-All times in clock cycles for inline version (no rcall/ret)
-### NORMAL (Version with precomputed keys)
+All times in clock cycles for "pure" inline version (no rcall/ret, all arguments loaded to registers). 
+When interfacing with other code, additional time will be needed to setup registers etc. (interfacing with 
+C ABI takes about 140 cycles per block for encryption/decryption *on callee side*).
+
+### Normal (Version with precomputed keys)
 Requires 176/208/240 bytes RAM for precomputing all round keys (can be done in place)
 
 *RAM* version keeps SBox and invSBox in RAM instead of flash for faster lookups
@@ -26,10 +29,10 @@ Key Size| S-Box | Encryption time | Decryption time | Key Expansion time
 128     | RAM   |             1951|             2522|               708 
 192     | Flash |             2543|             3242|               807 
 192     | RAM   |             2351|             3050|               775
-256     | FLASH |             2975|             3802|              2044
+256     | Flash |             2975|             3802|              2044
 256     | RAM   |             2751|             3578|              1992
 
-### TINY (128-bit version with small RAM requirements)
+### Tiny (128-bit version with small RAM requirements)
 Computes keys on the fly
 Key Size| S-Box | Encryption time | Decryption time | Key Expansion time
 --------|-------|-----------------|-----------------|-------------------
@@ -193,3 +196,8 @@ Decryption (each block):
 AES_ExpandLastKey128_T(&key[0], &key[0]);
 AES_Decrypt128_T(&ciphertext[0], &plaintext[0], &key[0]);
 ```
+
+Notes: 
+1. `AES_ExpandLastKey128_T` is inverse of `AES_ExpandFirstKey128_T`
+2. `AES_Encrypt128_T` transforms key to same form as `AES_ExpandLastKey128_T` (i.e. last round key)
+3. `AES_Decrypt128_T` transforms key to same form as `AES_ExpandFirstKey128_T` (i.e. original key, used in first round)
