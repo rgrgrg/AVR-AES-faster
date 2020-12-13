@@ -5,6 +5,39 @@ Fast AES library for 8-bit AVR processors
 2. Only S-Box and InvSbox tables (512 bytes) 
 3. Ability to calculate round keys on fly to save RAM (16 bytes RAM required for temporary key, can be "rolled back" after use) for AES128
 4. Decryption uses *Inverse Cipher*, not *Equivalent Inverse Cipher* - no need for InvMixColumn step for round keys (faster operation, same intermediate keys for encryption and decryption)
+5. Seems to be faster than:
+   1. [rijndaelfast.asm](http://point-at-infinity.org/avraes/)
+   2. [Fast Software AES Encryption](https://cseweb.ucsd.edu/~dstefan/pubs/osvik:2010:fast.pdf)
+   3. [AVR CryptoLib](http://www.emsign.nl/)
+   4. [AVR-Crypto-Lib](https://wiki.das-labor.org/w/AVR-Crypto-Lib/en#Blockchiphers)
+   5. Any pure C/C++ implementation
+   
+## Speedtest results
+All times in clock cycles for inline version (no rcall/ret)
+### NORMAL (Version with precomputed keys)
+Requires 176/208/240 bytes RAM for precomputing all round keys (can be done in place)
+
+*RAM* version keeps SBox and invSBox in RAM instead of flash for faster lookups
+
+Key Size| S-Box | Encryption time | Decryption time | Key Expansion time
+--------|-------|-----------------|-----------------|--------------------
+128     | Flash |         **2111**|         **2682**|               748
+128     | RAM   |             1951|             2522|               708 
+192     | Flash |             2543|             3242|               807 
+192     | RAM   |             2351|             3050|               775
+256     | FLASH |             2975|             3802|              2044
+256     | RAM   |             2751|             3578|              1992
+
+### TINY (128-bit version with small RAM requirements)
+Computes keys on the fly
+Key Size| S-Box | Encryption time | Decryption time | Key Expansion time
+--------|-------|-----------------|-----------------|-------------------
+128     | Flash | 2949            | 3538            |405/423
+
+**Both encryption and decryption modify key im memory. The key must be overwritten with correct value or rolled back before next operation.**
+
+Decryption after encryption (or vice versa) does not need key modification.
+   
 
 ## Code size
 
@@ -44,26 +77,5 @@ Table  | Size | Alignment
 SBox   |256   | 256
 InvSBox|256   | 256     
 
-## Test results
-All times in clock cycles for inline version (no rcall/ret)
-### NORMAL (Version with precomputed keys)
-Requires RAM for precomputing all round keys (176/208/240 bytes)
-Key Size| S-Box | Encryption time | Decryption time | Key Expansion time
---------|-------|-----------------|-----------------|--------------------
-128     | Flash |         **2111**|         **2682**|               748
-128     | RAM   |             1951|             2522|               708 
-192     | Flash |             2543|             3242|               807 
-192     | RAM   |             2351|             3050|               775
-256     | FLASH |             2975|             3802|              2044
-256     | RAM   |             2751|             3578|              1992
-
-### TINY (version with small ram requirements)
-Computes keys on the fly
-Key Size| S-Box | Encryption time | Decryption time | Key Expansion time
---------|-------|-----------------|-----------------|-------------------
-128     | Flash | 2949            | 3538            |405/423
-
-**Both encryption and decryption modify key im memory. The key must be rolled back (or overwritten with correct value) before next operation.**
-Decryption after encryption (or vice versa) does not need key modification.
 
 
