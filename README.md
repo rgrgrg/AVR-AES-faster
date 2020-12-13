@@ -201,3 +201,15 @@ Notes:
 1. `AES_ExpandLastKey128_T` is inverse of `AES_ExpandFirstKey128_T`
 2. `AES_Encrypt128_T` transforms key to same form as `AES_ExpandLastKey128_T` (i.e. last round key)
 3. `AES_Decrypt128_T` transforms key to same form as `AES_ExpandFirstKey128_T` (i.e. original key, used in first round)
+
+------------------------------------------------------------------------------------------------------------
+
+## TODO
+- [x] *Flash* version.
+- [x] Make it faster and smaller.
+- [x] *RAM* version (slightly faster but requiring 512B of precious RAM). 
+- [x] *Tiny* version (on fly key generation, low RAM requirements).
+- [ ] *Nano* version (like tiny, without tables, size optimized).
+- [ ] Test against [more test vectors](https://www.cosic.esat.kuleuven.be/nessie/testvectors/).
+
+
