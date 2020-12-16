@@ -210,7 +210,9 @@ Notes:
 - [x] Make it faster and smaller.
 - [x] *RAM* version (slightly faster but requiring 512B of precious RAM). 
 - [x] *Tiny* version (on fly key generation, low RAM requirements).
-- [ ] *Nano* version (like tiny, without tables, size optimized).
+- [ ] Make tiny version smaller (remove duplicate code at expense of few cycles)
+- [ ] *Nano* version (like tiny, without tables, size optimized, much slower).
+- [ ] Generate S-Boxes for RAM version instead of copying Flash
 - [ ] Test against [more test vectors](https://www.cosic.esat.kuleuven.be/nessie/testvectors/).
 
 
