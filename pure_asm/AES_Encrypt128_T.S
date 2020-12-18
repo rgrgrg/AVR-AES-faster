@@ -62,49 +62,8 @@ AES_Encrypt128_T:
 		ldi   zh,hi8(AES_SBox_F)
 		ldi  R_CON,1
 		ldi  C_1B,0x1b
-		rjmp 100f
-101:
-#SubBytesShiftRows
-# row 0
-		mov   zl,ST00
-		lpm  ST00,Z
-		mov   zl,ST01
-		lpm  ST01,Z
-		mov   zl,ST02
-		lpm  ST02,Z
-		mov   zl,ST03
-		lpm  ST03,Z
-# row 1
-		mov  TMP0,ST10
-		mov   zl,ST11
-		lpm  ST10,Z
-		mov   zl,ST12
-		lpm  ST11,Z
-		mov   zl,ST13
-		lpm  ST12,Z
-		mov   zl,TMP0
-		lpm  ST13,Z
-# row 2
-		mov  TMP0,ST20
-		mov  TMP1,ST21
-		mov   zl,ST22
-		lpm  ST20,Z
-		mov   zl,ST23
-		lpm  ST21,Z
-		mov   zl,TMP0
-		lpm  ST22,Z
-		mov   zl,TMP1
-		lpm  ST23,Z
-# row 3
-		mov  TMP0,ST33
-		mov   zl,ST32
-		lpm  ST33,Z
-		mov   zl,ST31
-		lpm  ST32,Z
-		mov   zl,ST30
-		lpm  ST31,Z
-		mov   zl,TMP0
-		lpm  ST30,Z
+		rjmp 101f ; AddRoundKey
+100:
 #MixColumns
 # MixColumn(0)
 		movw TMP0,ST00
@@ -234,7 +193,7 @@ AES_Encrypt128_T:
 		eor  ST33,TMP1
 		eor  ST23,TMP2
 		eor  ST33,TMP2
-100:
+101:
 #AddAndExpandKey
 # RotWord+SubWord
 		adiw KEYPTR,13
@@ -315,15 +274,6 @@ AES_Encrypt128_T:
 		eor  TMP3,TMP4
 		st   KEYPTR+,TMP3
 		sbiw KEYPTR,16
-		cpi  R_CON,0x36
-		breq 110f ; exit
-#   xtime2_rcon
-		lsl  R_CON
-		brcc 1f
-		ldi  R_CON,0x1b
-1:
-		rjmp 101b
-110:
 #SubBytesShiftRows
 # row 0
 		mov   zl,ST00
@@ -365,6 +315,15 @@ AES_Encrypt128_T:
 		lpm  ST31,Z
 		mov   zl,TMP0
 		lpm  ST30,Z
+		cpi  R_CON,0x36
+		breq 102f ; exit
+#   xtime2_rcon
+		lsl  R_CON
+		brcc 1f
+		ldi  R_CON,0x1b
+1:
+		rjmp 100b ; loop
+102:
 #AddAndExpandKey
 # Last Round
 		ld   TMP4,KEYPTR+

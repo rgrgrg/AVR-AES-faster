@@ -59,45 +59,8 @@
 AES_Encrypt_R:
 		ldi   zh,hi8(AES_SBox_R)
 		ldi  C_1B,0x1b
-		rjmp 100f
-101:
-#SubBytesShiftRows
-# row 0
-		mov   zl,ST00
-		ld   ST00,Z  
-		mov   zl,ST01
-		ld   ST01,Z  
-		mov   zl,ST02
-		ld   ST02,Z  
-		mov   zl,ST03
-		ld   ST03,Z  
-# row 1
-		mov   zl,ST11
-		ld   ST10,Z  
-		mov   zl,ST12
-		ld   ST11,Z  
-		mov   zl,ST13
-		ld   ST12,Z  
-		mov   zl,TMP0
-		ld   ST13,Z  
-# row 2
-		mov   zl,ST22
-		ld   ST20,Z  
-		mov   zl,ST23
-		ld   ST21,Z  
-		mov   zl,TMP1
-		ld   ST22,Z  
-		mov   zl,TMP2
-		ld   ST23,Z  
-# row 3
-		mov   zl,ST32
-		ld   ST33,Z  
-		mov   zl,ST31
-		ld   ST32,Z  
-		mov   zl,ST30
-		ld   ST31,Z  
-		mov   zl,TMP3
-		ld   ST30,Z  
+		rjmp 101f
+100:
 #MixColumns
 # MixColumn(0)
 		movw TMP0,ST00
@@ -227,7 +190,7 @@ AES_Encrypt_R:
 		eor  ST33,TMP1
 		eor  ST23,TMP2
 		eor  ST33,TMP2
-100:
+101:
 #AddRoundKey
 		ld   TMP4,XKEYPTR+
 		eor  ST00,TMP4
@@ -261,10 +224,6 @@ AES_Encrypt_R:
 		eor  ST23,TMP4
 		ld   TMP3,XKEYPTR+
 		eor  TMP3,ST33
-		dec  ROUNDS
-		breq 1f ; exit
-		rjmp 101b
-1:
 #SubBytesShiftRows
 # row 0
 		mov   zl,ST00
@@ -302,6 +261,10 @@ AES_Encrypt_R:
 		ld   ST31,Z  
 		mov   zl,TMP3
 		ld   ST30,Z  
+		dec  ROUNDS
+		breq 1f ; exit
+		rjmp 100b
+1:
 #AddRoundKey
 		ld   TMP0,XKEYPTR+
 		eor  ST00,TMP0

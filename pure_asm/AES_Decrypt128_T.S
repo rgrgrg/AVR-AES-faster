@@ -145,50 +145,8 @@ AES_Decrypt128_T:
 		eor  TMP1,TMP2
 		eor  TMP1,R_CON
 		st   -KEYPTR,TMP1
-		ldi  R_CON,0x1b
+		rjmp 102f
 100:
-		ldi   zh,hi8(AES_InvSBox_F)
-#InvSubBytesShiftRows
-# row 0
-		mov   zl,ST00
-		lpm  ST00,Z
-		mov   zl,ST01
-		lpm  ST01,Z
-		mov   zl,ST02
-		lpm  ST02,Z
-		mov   zl,ST03
-		lpm  ST03,Z
-# row 1
-		mov  TMP0,ST13
-		mov   zl,ST12
-		lpm  ST13,Z
-		mov   zl,ST11
-		lpm  ST12,Z
-		mov   zl,ST10
-		lpm  ST11,Z
-		mov   zl,TMP0
-		lpm  ST10,Z
-# row 2
-		mov  TMP0,ST20
-		mov  TMP1,ST21
-		mov   zl,ST22
-		lpm  ST20,Z
-		mov   zl,ST23
-		lpm  ST21,Z
-		mov   zl,TMP0
-		lpm  ST22,Z
-		mov   zl,TMP1
-		lpm  ST23,Z
-# row 3
-		mov  TMP0,ST30
-		mov   zl,ST31
-		lpm  ST30,Z
-		mov   zl,ST32
-		lpm  ST31,Z
-		mov   zl,ST33
-		lpm  ST32,Z
-		mov   zl,TMP0
-		lpm  ST33,Z
 		ldi   zh,hi8(AES_SBox_F)
 #InvAddAndExpandKey
 		movw TKEYPTR,KEYPTR
@@ -487,13 +445,7 @@ AES_Decrypt128_T:
 		eor  TMP0,TMP2
 		eor  ST13,TMP0
 		eor  ST33,TMP0
-		lsr  R_CON
-		breq 1f ; exit
-		brcc 101f
-		ldi  R_CON,0x80
-101:
-		rjmp 100b
-1:
+102:
 		ldi   zh,hi8(AES_InvSBox_F)
 #InvSubBytesShiftRows
 # row 0
@@ -536,6 +488,13 @@ AES_Decrypt128_T:
 		lpm  ST32,Z
 		mov   zl,TMP0
 		lpm  ST33,Z
+		lsr  R_CON
+		breq 1f ; exit
+		brcc 101f
+		ldi  R_CON,0x80
+101:
+		rjmp 100b
+1:
 #InvAddAndExpandKey
 #First Round
 		ld   TMP4,KEYPTR+
