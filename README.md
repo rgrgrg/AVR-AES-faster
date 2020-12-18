@@ -24,14 +24,16 @@ Requires 176/208/240 bytes RAM for precomputing all round keys (can be done in p
 
 *RAM* version keeps SBox and invSBox in RAM instead of flash for faster lookups
 
-Key Size| S-Box | Encryption time | Decryption time | Key Expansion time
---------|-------|-----------------|-----------------|--------------------
-128     | Flash |         **2111**|         **2682**|               748
-128     | RAM   |             1951|             2522|               708 
-192     | Flash |             2543|             3242|               807 
-192     | RAM   |             2351|             3050|               775
-256     | Flash |             2975|             3802|              2044
-256     | RAM   |             2751|             3578|              1992
+Key Size| S-Box | Encryption time | Decryption time | Key Expansion time | S-box_invSBox initialization
+--------|-------|-----------------|-----------------|--------------------|---------------------
+128     | Flash |         **2111**|         **2687**|               748  |                   0
+128     | RAM   |             1951|             2527|               708  |               8076*
+192     | Flash |             2543|             3247|               807  |                   0
+192     | RAM   |             2351|             3055|               775  |               8076*
+256     | Flash |             2975|             3807|              2044  |                   0
+256     | RAM   |             2751|             3583|              1992  |               8076*
+
+\* You can also copy tables from flash, see examples
 
 ### Tiny (128-bit version with small RAM requirements)
 Computes keys on the fly
@@ -52,28 +54,31 @@ Pure assembler version, inlined, all input parameters set, in place key expansio
 
 Variant       | Key size | Bytes Flash | Bytes RAM | Bytes on stack
 --------------|----------|-------------|-----------|---------------
-Flash         | 128      | 1738        | 176       | 0
-RAM           | 128      | 1738        | 688       | 0
-Tiny (Flash)  | 128      | 2158        | **16**    | 0
-Flash         | 192      | 1772        | 208       | 0
-RAM           | 192      | 1772        | 720       | 0
-Flash         | 256*     | 1776        | 240       | 0
-RAM           | 256*     | 1776        | 752       | 0
+Flash         | 128      | 1610        | 176       | 0
+RAM           | 128      | **1236**    | 688       | 0
+Tiny (Flash)  | 128      | 2012        | **16**    | 0
+Flash         | 192      | 1644        | 208       | 0
+RAM           | 192      | 1270        | 720       | 0
+Flash         | 256*     | 1648        | 240       | 0
+RAM           | 256*     | 1274        | 752       | 0
 
-* 256-bit version can also be used for other key sizes
+\* 256-bit version can also be used for other key sizes.
 
 ### By Function
-Variant       | Operation     | Key size | Bytes
---------------|---------------|----------|---------
-Flash/RAM     | Encryption    | Any      | 468
-Flash/RAM     | Decryption    | Any      | 660
-Flash/RAM     | Key Expansion | Any      | 136
-Flash/RAM     | Key Expansion | 128      | 98
-Flash/RAM     | Key Expansion | 192      | 132
-Tiny (Flash)  | Encryption    | 128      | 582
-Tiny (Flash)  | Decryption    | 128      | 872 
-Tiny (Flash)  | Rewind K0->K10| 128      | 96
-Tiny (Flash)  | Rewind K10->K0| 128      | 96
+Variant       | Operation         | Key size | Bytes
+--------------|-------------------|----------|---------
+Flash/RAM     | Encryption        | Any      | 404
+Flash/RAM     | Decryption        | Any      | 596
+Flash/RAM     | Key Expansion     | Any      | 136
+Flash/RAM     | Key Expansion     | 128      | 98
+Flash/RAM     | Key Expansion     | 192      | 132
+RAM           | Init SBox         | Any      | 124
+RAM           | Init InvSBox      | Any      | 124
+RAM           | Init SBox+InvSBox | Any      | 138
+Tiny (Flash)  | Encryption        | 128      | 510
+Tiny (Flash)  | Decryption        | 128      | 798 
+Tiny (Flash)  | Rewind K0->K10    | 128      | 96
+Tiny (Flash)  | Rewind K10->K0    | 128      | 96
 
 All functions can be inlined.
 
@@ -124,9 +129,19 @@ uint8_t ciphertext[AES_BLOCKSIZE];
 ```
 
 One time initialization (global):
+* Fastest method, requires 512B flash for tables
 ```c++
 memcpy_P(AES_SBox_R   , AES_SBox_F   , sizeof(AES_SBox_R   ));
 memcpy_P(AES_InvSBox_R, AES_InvSBox_F, sizeof(AES_InvSBox_R));
+```
+* Initializing both table at once:
+```c++
+AES_InitSBoxInvSBox_R();
+```
+* Initializing one table at tme:
+```c++
+AES_InitSBox_R();    //Needed for encryption and key expansion
+AES_InitInvSBox_R(); //Needed for decryption
 ```
 
 One time (per-key) initialization:
@@ -210,9 +225,9 @@ Notes:
 - [x] Make it faster and smaller.
 - [x] *RAM* version (slightly faster but requiring 512B of precious RAM). 
 - [x] *Tiny* version (on fly key generation, low RAM requirements).
-- [ ] Make tiny version smaller (remove duplicate code at expense of few cycles)
+- [x] Make tiny version smaller (remove duplicate code at expense of few cycles)
+- [x] Generate S-Boxes for RAM version instead of copying Flash
 - [ ] *Nano* version (like tiny, without tables, size optimized, much slower).
-- [ ] Generate S-Boxes for RAM version instead of copying Flash
 - [ ] Test against [more test vectors](https://www.cosic.esat.kuleuven.be/nessie/testvectors/).
 
 
