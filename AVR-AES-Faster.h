@@ -51,6 +51,12 @@ extern "C" {
     // You have to define this variable in your program
     extern uint8_t AES_SBox_R   [256]   __attribute__ ((aligned (256)));
     extern uint8_t AES_InvSBox_R[256]   __attribute__ ((aligned (256)));
+    extern uint8_t AES_InvBox_N [256]   __attribute__ ((aligned (256))); //Nano
+
+    //Function to fill the tables above
+    extern void AES_InitSBox_R();
+    extern void AES_InitInvSBox_R();
+    extern void AES_InitSBoxInvSBox_R();
 
     //Standard version
     extern void AES_Encrypt_F(const void *in, void *out, const void *xkey, 
@@ -94,7 +100,15 @@ extern "C" {
     extern void AES_ExpandLastKey128_T (const void *key0in, void *key10out);
     
     extern void AES_ExpandFirstKey128_T(const void *key10in, void *key0out);
-  //#endif
+
+    //Nano version
+    #ifdef AES_NANO
+    extern void AES_InitInvBox_N();
+    extern void AES_Encrypt128_N(uint8_t *s, uint8_t *k);
+    extern void AES_Decrypt128_N(uint8_t *s, uint8_t *k);
+    extern void AES_ExpandLastKey128_N (uint8_t *k);
+    extern void AES_ExpandFirstKey128_N(uint8_t *k);
+    #endif
 #ifdef __cplusplus
 };
 #endif
@@ -141,5 +155,8 @@ inline void AES_ExpandKey256_R(const void *keyin, void *xkeyout)
 {
     AES_ExpandKey_R(keyin,xkeyout, AES256_Nk, AES256_Nr);
 }
+
+    
+
 
 #endif

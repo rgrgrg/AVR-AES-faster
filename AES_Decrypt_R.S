@@ -202,45 +202,8 @@ AES_Decrypt_int_R_start1:
 		eor  ST10,TMP0
 		ld   TMP0,-XKEYPTR
 		eor  ST00,TMP0
-		dec  ROUNDS
+		rjmp 101f
 100:
-#InvSubBytesShiftRows
-# row 0
-		mov   zl,ST00
-		ld   ST00,Z  
-		mov   zl,ST01
-		ld   ST01,Z  
-		mov   zl,ST02
-		ld   ST02,Z  
-		mov   zl,ST03
-		ld   ST03,Z  
-# row 1
-		mov   zl,ST13
-		ld   TMP0,Z  
-		mov   zl,ST12
-		ld   ST13,Z  
-		mov   zl,ST11
-		ld   ST12,Z  
-		mov   zl,ST10
-		ld   ST11,Z  
-# row 2
-		mov   zl,ST20
-		ld   TMP1,Z  
-		mov   zl,ST21
-		ld   TMP2,Z  
-		mov   zl,ST22
-		ld   ST20,Z  
-		mov   zl,ST23
-		ld   ST21,Z  
-# row 3
-		mov   zl,ST30
-		ld   TMP3,Z  
-		mov   zl,ST31
-		ld   ST30,Z  
-		mov   zl,ST32
-		ld   ST31,Z  
-		mov   zl,ST33
-		ld   ST32,Z  
 #InvAddRoundKey
 		ld   ST33,-XKEYPTR
 		eor  ST33,TMP3
@@ -491,10 +454,7 @@ AES_Decrypt_int_R_start1:
 		eor  TMP0,TMP2
 		eor  ST13,TMP0
 		eor  ST33,TMP0
-		dec  ROUNDS
-		breq 1f ; exit
-		rjmp 100b
-1:
+101:
 #InvSubBytesShiftRows
 # row 0
 		mov   zl,ST00
@@ -532,6 +492,10 @@ AES_Decrypt_int_R_start1:
 		ld   ST31,Z  
 		mov   zl,ST33
 		ld   ST32,Z  
+		dec  ROUNDS
+		breq 1f ; exit
+		rjmp 100b
+1:
 #InvAddRoundKey
 		ld   ST33,-XKEYPTR
 		eor  ST33,TMP3

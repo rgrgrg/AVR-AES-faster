@@ -112,45 +112,8 @@ AES_Encrypt_F_start1:
 #------------- Real function starts here -------------
 		ldi   zh,hi8(AES_SBox_F)
 		ldi  C_1B,0x1b
-		rjmp 100f
-101:
-#SubBytesShiftRows
-# row 0
-		mov   zl,ST00
-		lpm  ST00,Z
-		mov   zl,ST01
-		lpm  ST01,Z
-		mov   zl,ST02
-		lpm  ST02,Z
-		mov   zl,ST03
-		lpm  ST03,Z
-# row 1
-		mov   zl,ST11
-		lpm  ST10,Z
-		mov   zl,ST12
-		lpm  ST11,Z
-		mov   zl,ST13
-		lpm  ST12,Z
-		mov   zl,TMP0
-		lpm  ST13,Z
-# row 2
-		mov   zl,ST22
-		lpm  ST20,Z
-		mov   zl,ST23
-		lpm  ST21,Z
-		mov   zl,TMP1
-		lpm  ST22,Z
-		mov   zl,TMP2
-		lpm  ST23,Z
-# row 3
-		mov   zl,ST32
-		lpm  ST33,Z
-		mov   zl,ST31
-		lpm  ST32,Z
-		mov   zl,ST30
-		lpm  ST31,Z
-		mov   zl,TMP3
-		lpm  ST30,Z
+		rjmp 101f
+100:
 #MixColumns
 # MixColumn(0)
 		movw TMP0,ST00
@@ -280,7 +243,7 @@ AES_Encrypt_F_start1:
 		eor  ST33,TMP1
 		eor  ST23,TMP2
 		eor  ST33,TMP2
-100:
+101:
 #AddRoundKey
 		ld   TMP4,XKEYPTR+
 		eor  ST00,TMP4
@@ -314,10 +277,6 @@ AES_Encrypt_F_start1:
 		eor  ST23,TMP4
 		ld   TMP3,XKEYPTR+
 		eor  TMP3,ST33
-		dec  ROUNDS
-		breq 1f ; exit
-		rjmp 101b
-1:
 #SubBytesShiftRows
 # row 0
 		mov   zl,ST00
@@ -355,6 +314,10 @@ AES_Encrypt_F_start1:
 		lpm  ST31,Z
 		mov   zl,TMP3
 		lpm  ST30,Z
+		dec  ROUNDS
+		breq 1f ; exit
+		rjmp 100b
+1:
 #AddRoundKey
 		ld   TMP0,XKEYPTR+
 		eor  ST00,TMP0

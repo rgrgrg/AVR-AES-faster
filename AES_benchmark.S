@@ -32,6 +32,10 @@ benchmark_sizes:
 		.word AES_Decrypt128_T_name, AES_Decrypt128_T, AES_Decrypt128_T_start1, AES_Decrypt128_T_end1, AES_Decrypt128_T_end
 		.word AES_ExpandLastKey128_T_name, AES_ExpandLastKey128_T, AES_ExpandLastKey128_T_start1, AES_ExpandLastKey128_T_end1, AES_ExpandLastKey128_T_end
 		.word AES_ExpandFirstKey128_T_name, AES_ExpandFirstKey128_T, AES_ExpandFirstKey128_T_start1, AES_ExpandFirstKey128_T_end1, AES_ExpandFirstKey128_T_end
+		.word AES_InitInvBox_N_name, AES_InitInvBox_N, AES_InitInvBox_N_start1, AES_InitInvBox_N_end1, AES_InitInvBox_N_end
+		.word AES_InitSBox_R_name, AES_InitSBox_R, AES_InitSBox_R_start1, AES_InitSBox_R_end1, AES_InitSBox_R_end
+		.word AES_InitInvSBox_R_name, AES_InitInvSBox_R, AES_InitInvSBox_R_start1, AES_InitInvSBox_R_end1, AES_InitInvSBox_R_end
+		.word AES_InitSBoxInvSBox_R_name, AES_InitSBoxInvSBox_R, AES_InitSBoxInvSBox_R_start1, AES_InitSBoxInvSBox_R_end1, AES_InitSBoxInvSBox_R_end
 		.word 0
 AES_Encrypt_F_name:
 		.asciz "AES_Encrypt_F"
@@ -61,4 +65,12 @@ AES_ExpandLastKey128_T_name:
 		.asciz "AES_ExpandLastKey128_T"
 AES_ExpandFirstKey128_T_name:
 		.asciz "AES_ExpandFirstKey128_T"
+AES_InitInvBox_N_name:
+		.asciz "AES_InitInvBox_N"
+AES_InitSBox_R_name:
+		.asciz "AES_InitSBox_R"
+AES_InitInvSBox_R_name:
+		.asciz "AES_InitInvSBox_R"
+AES_InitSBoxInvSBox_R_name:
+		.asciz "AES_InitSBoxInvSBox_R"
 #endif

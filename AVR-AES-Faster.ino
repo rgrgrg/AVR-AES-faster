@@ -1,13 +1,13 @@
 /*#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#
-#                                                                           #
-#    AVR-AES-Faster Library                                                 #
-#    (c) 2020 Radosław Gancarz <radgan99@gmail.com>                         #
-#                                                                           #
-#    This Source Code Form is subject to the terms of the Mozilla Public    #
-#    License, v. 2.0. If a copy of the MPL was not distributed with this    #
-#    file, You can obtain one at http://mozilla.org/MPL/2.0/.               #
-#                                                                           #
-#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#*/
+  #                                                                         #
+  #   AVR-AES-Faster Library                                                #
+  #   (c) 2020 Radosław Gancarz <radgan99@gmail.com>                        #
+  #                                                                         #
+  #   This Source Code Form is subject to the terms of the Mozilla Public   #
+  #   License, v. 2.0. If a copy of the MPL was not distributed with this   #
+  #   file, You can obtain one at http://mozilla.org/MPL/2.0/.              #
+  #                                                                         #
+  #@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#@#*/
 
 #include <avr/pgmspace.h>
 #include <stdio.h>
@@ -18,60 +18,72 @@
 #define TEST_RAM
 
 //FIPS 197 Appendix C Example Vectors
-const uint8_t FIPS_ExCXXX_P[] PROGMEM = { 
-  0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 
-  0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff }; //Plaintext
-  
-const uint8_t FIPS_ExCXXX_K[] PROGMEM = { 
-  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 
+const uint8_t FIPS_ExCXXX_P[] PROGMEM = {
+  0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+  0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
+}; //Plaintext
+
+const uint8_t FIPS_ExCXXX_K[] PROGMEM = {
+  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
   0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
-  0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 
-  0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f }; //Key
-  
-const uint8_t FIPS_ExC128_C[] PROGMEM = { 
-  0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30, 
-  0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a }; //ciphertext
-  
-const uint8_t FIPS_ExC128_L[] PROGMEM = { 
-  0x13, 0x11, 0x1d, 0x7f, 0xe3, 0x94, 0x4a, 0x17, 
-  0xf3, 0x07, 0xa7, 0x8b, 0x4d, 0x2b, 0x30, 0xc5 }; //Last round key
-  
+  0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+  0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f
+}; //Key
 
-const uint8_t FIPS_ExC192_C[] PROGMEM = { 
-  0xdd, 0xa9, 0x7c, 0xa4, 0x86, 0x4c, 0xdf, 0xe0, 
-  0x6e, 0xaf, 0x70, 0xa0, 0xec, 0x0d, 0x71, 0x91 };
-  
-const uint8_t FIPS_ExC192_L[] PROGMEM = { 
-  0xa4, 0x97, 0x0a, 0x33, 0x1a, 0x78, 0xdc, 0x09, 
-  0xc4, 0x18, 0xc2, 0x71, 0xe3, 0xa4, 0x1d, 0x5d };
-  
+const uint8_t FIPS_ExC128_C[] PROGMEM = {
+  0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30,
+  0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a
+}; //ciphertext
 
-const uint8_t FIPS_ExC256_C[] PROGMEM = { 
-  0x8e, 0xa2, 0xb7, 0xca, 0x51, 0x67, 0x45, 0xbf, 
-  0xea, 0xfc, 0x49, 0x90, 0x4b, 0x49, 0x60, 0x89 };
-  
-const uint8_t FIPS_ExC256_L[] PROGMEM = { 
-  0x24, 0xfc, 0x79, 0xcc, 0xbf, 0x09, 0x79, 0xe9, 
-  0x37, 0x1a, 0xc2, 0x3c, 0x6d, 0x68, 0xde, 0x36 };
-  
+const uint8_t FIPS_ExC128_L[] PROGMEM = {
+  0x13, 0x11, 0x1d, 0x7f, 0xe3, 0x94, 0x4a, 0x17,
+  0xf3, 0x07, 0xa7, 0x8b, 0x4d, 0x2b, 0x30, 0xc5
+}; //Last round key
+
+
+const uint8_t FIPS_ExC192_C[] PROGMEM = {
+  0xdd, 0xa9, 0x7c, 0xa4, 0x86, 0x4c, 0xdf, 0xe0,
+  0x6e, 0xaf, 0x70, 0xa0, 0xec, 0x0d, 0x71, 0x91
+};
+
+const uint8_t FIPS_ExC192_L[] PROGMEM = {
+  0xa4, 0x97, 0x0a, 0x33, 0x1a, 0x78, 0xdc, 0x09,
+  0xc4, 0x18, 0xc2, 0x71, 0xe3, 0xa4, 0x1d, 0x5d
+};
+
+
+const uint8_t FIPS_ExC256_C[] PROGMEM = {
+  0x8e, 0xa2, 0xb7, 0xca, 0x51, 0x67, 0x45, 0xbf,
+  0xea, 0xfc, 0x49, 0x90, 0x4b, 0x49, 0x60, 0x89
+};
+
+const uint8_t FIPS_ExC256_L[] PROGMEM = {
+  0x24, 0xfc, 0x79, 0xcc, 0xbf, 0x09, 0x79, 0xe9,
+  0x37, 0x1a, 0xc2, 0x3c, 0x6d, 0x68, 0xde, 0x36
+};
+
 
 //FIPP 197 Appendix B Example Vector
-const uint8_t FIPS_ExB128_P[] PROGMEM = { 
-  0x32, 0x43, 0xf6, 0xa8, 0x88, 0x5a, 0x30, 0x8d, 
-  0x31, 0x31, 0x98, 0xa2, 0xe0, 0x37, 0x07, 0x34 }; //plaintext
-  
-const uint8_t FIPS_ExB128_K[] PROGMEM = { 
-  0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 
-  0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c }; //key
-  
-const uint8_t FIPS_ExB128_C[] PROGMEM = { 
-  0x39, 0x25, 0x84, 0x1d, 0x02, 0xdc, 0x09, 0xfb, 
-  0xdc, 0x11, 0x85, 0x97, 0x19, 0x6a, 0x0b, 0x32 }; //ciphertext
-  
-const uint8_t FIPS_ExB128_L[] PROGMEM = { 
-  0xd0, 0x14, 0xf9, 0xa8, 0xc9, 0xee, 0x25, 0x89, 
-  0xe1, 0x3f, 0x0c, 0xc8, 0xb6, 0x63, 0x0c, 0xa6 }; // Last round key
-  
+const uint8_t FIPS_ExB128_P[] PROGMEM = {
+  0x32, 0x43, 0xf6, 0xa8, 0x88, 0x5a, 0x30, 0x8d,
+  0x31, 0x31, 0x98, 0xa2, 0xe0, 0x37, 0x07, 0x34
+}; //plaintext
+
+const uint8_t FIPS_ExB128_K[] PROGMEM = {
+  0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
+  0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
+}; //key
+
+const uint8_t FIPS_ExB128_C[] PROGMEM = {
+  0x39, 0x25, 0x84, 0x1d, 0x02, 0xdc, 0x09, 0xfb,
+  0xdc, 0x11, 0x85, 0x97, 0x19, 0x6a, 0x0b, 0x32
+}; //ciphertext
+
+const uint8_t FIPS_ExB128_L[] PROGMEM = {
+  0xd0, 0x14, 0xf9, 0xa8, 0xc9, 0xee, 0x25, 0x89,
+  0xe1, 0x3f, 0x0c, 0xc8, 0xb6, 0x63, 0x0c, 0xa6
+}; // Last round key
+
 
 typedef struct
 {
@@ -92,17 +104,17 @@ const test_vector_t test_vectors[] PROGMEM = {
 #ifdef AES_BENCHMARK
 extern "C" {
   extern const void *benchmark_sizes[];
+  uint8_t tifr1;
 }
 
 uint16_t benchmark_data[4];
 void print_sizes()
 {
-  char buf[24];
   printf_P(PSTR("# Function sizes\n\n"
                 "Function name          | asm | abi | +abi\n"
                 "-----------------------|-----|-----|-----\n"));
   const void **p;
-  p=&benchmark_sizes[0];
+  p = &benchmark_sizes[0];
   while (true)
   {
     const char *   fname = (const char *)pgm_read_ptr(p++);
@@ -114,32 +126,138 @@ void print_sizes()
     uint16_t aend   = pgm_read_word(p++);
     uint16_t cend   = pgm_read_word(p++);
     uint16_t asize  = aend - astart;
-    // Overhead for time measurements AES_BENCHMARK: 
+    // Overhead for time measurements AES_BENCHMARK:
     // 4 bytes for lds, 4 bytes for sts, always in pairs, 4 times per function
     uint16_t csize = cend - cstart - (4 + 4) * 2 * 4;
 
-    strncpy_P(&buf[0],fname,sizeof(buf));
-    printf_P(PSTR("%23s|%5d|%5d|%5d\n"), 
-	       buf, asize, csize, csize - asize);
-
+    printf_P(PSTR("%23S|%5d|%5d|%5d\n"),
+             fname, asize, csize, csize - asize);
   }
 }
 
-
+const int16_t PROGMEM t1_mul_tbl[8] = {0, 1, 8, 64, 256, 1024, 0, 0};
 void print_cycles(uint16_t wrapped_params)
 {
   //One measurement takes 8 cycles
   //rcall + return takes  8 cycles
-  uint16_t asmtime = benchmark_data[2] - benchmark_data[1] - 8*1;
-  uint16_t alltime = benchmark_data[3] - benchmark_data[0] - 8*3+8;
-  alltime+=wrapped_params; // Any parameter from inline function takes 
-                           // one clock cycle (ldi)
-  printf_P(PSTR(" asm=%4d, with_abi=%4d +abi=%3d\n"),
-		 asmtime,  alltime, alltime-asmtime);
+
+  uint32_t t1_mul;
+
+  t1_mul =  pgm_read_word(&t1_mul_tbl[(TCCR1B & 7)]);
+
+  uint32_t asmtime = t1_mul * (uint32_t)(benchmark_data[2] - benchmark_data[1]) - 8 * 1;
+  uint32_t alltime = t1_mul * (uint32_t)(benchmark_data[3] - benchmark_data[0]) - 8 * 3 + 8;
+  alltime += wrapped_params; // Any parameter from inline function takes
+  // one clock cycle (ldi)
+  printf_P(PSTR(" asm=%4ld, with_abi=%4ld +abi=%3ld\n"),
+           asmtime,  alltime, alltime - asmtime);
+
+  if (tifr1 & _BV(OCF1A))
+    printf_P(PSTR("TIMER OVERFLOW\n"));
 }
 
 #endif
 
+
+#ifdef TEST_RAM
+bool test_tables()
+{
+  printf_P(PSTR("< << <<< <<<< <<<<< <<<<<< << S-BOX  CREATION >> >>>>>> >>>>> >>>> >>> >> >\n\n"));
+  bool ok = true;
+
+  for (uint8_t j = 0; j < 3; j++)
+  {
+    bool test_ok = true;
+    uint8_t test_case = 0; //none
+    const char *fname = PSTR("None");
+
+    int8_t wrapped_params = 0;
+
+
+    memset(&AES_SBox_R[0], 0x55, sizeof(AES_SBox_R));
+    memset(&AES_InvSBox_R[0], 0x55, sizeof(AES_InvSBox_R));
+
+#ifdef AES_BENCHMARK
+    cli();
+    TCNT1 = 0;
+    TIFR1 = _BV(OCF1A) | _BV(TOV1);
+#endif
+    switch (j)
+    {
+      // SBox
+      case 0:
+        AES_InitSBox_R();
+        fname = PSTR("AES_InitSBox_R");
+        test_case = 1;
+        break;
+      case 1:
+        AES_InitInvSBox_R();
+        fname = PSTR("AES_InitInvSBox_R");
+        test_case = 2;
+        break;
+      case 2:
+        AES_InitSBoxInvSBox_R();
+        fname = PSTR("AES_InitSBoxInvSBox_R");
+        test_case = 3;
+        break;
+    }
+#ifdef AES_BENCHMARK
+    tifr1 = TIFR1;
+    sei();
+#endif
+
+    if (test_case & 1)
+    {
+      if (memcmp_P(&AES_SBox_R[0], &AES_SBox_F[0], sizeof(AES_SBox_R)))
+      {
+        printf_P(PSTR("%-23S: FAILED\n"), fname);
+        test_ok = false;
+
+        printf_P(PSTR("List of differences\n"));
+        for (uint16_t x = 0; x < sizeof(AES_SBox_R); x++)
+          if (AES_SBox_R[x] != pgm_read_byte(&AES_SBox_F[x]))
+            printf_P(PSTR("%03x: %02x %02x\n"), x, AES_SBox_R[x], pgm_read_byte(&AES_SBox_F[x]));
+      }
+      else
+      {
+#ifdef AES_BENCHMARK
+        printf_P(PSTR("%-23S: OK, "), fname);
+        print_cycles(wrapped_params);
+#else
+        printf_P(PSTR("%-23S: OK\n"), fname);
+#endif
+      }
+    }
+
+    if (test_case & 2)
+    {
+      if (memcmp_P(&AES_InvSBox_R[0], &AES_InvSBox_F[0], sizeof(AES_InvSBox_R)))
+      {
+        printf_P(PSTR("%-23S: FAILED\n"), fname);
+        test_ok = false;
+
+        printf_P(PSTR("List of differences\n"));
+        for (uint16_t x = 0; x < sizeof(AES_InvSBox_R); x++)
+          if (AES_InvSBox_R[x] != pgm_read_byte(&AES_InvSBox_F[x]))
+            printf_P(PSTR("%03x: %02x %02x\n"), x, AES_InvSBox_R[x], pgm_read_byte(&AES_InvSBox_F[x]));
+      }
+      else
+      {
+#ifdef AES_BENCHMARK
+        printf_P(PSTR("%-23S: OK, "), fname);
+        print_cycles(wrapped_params);
+#else
+        printf_P(PSTR("%-23S: OK\n"), fname);
+#endif
+      }
+    }
+
+    ok &= test_ok;
+  }
+  printf_P(PSTR("\n"));
+  return ok;
+}
+#endif
 
 #define TEST_MAGIC 0x5a
 bool test_expansion()
@@ -148,7 +266,6 @@ bool test_expansion()
   uint8_t key  [AES256_KEYSIZE];
   uint8_t xkey [AES256_XKEYSIZE + 16];
   uint8_t xtest[AES256_XKEYSIZE + 16];
-  char    fname_buf[24];
   uint8_t nk, nr;
   uint8_t n = sizeof(test_vectors) / sizeof(test_vectors[0]);
   const uint8_t *ptr;
@@ -161,7 +278,7 @@ bool test_expansion()
     nr = pgm_read_byte(&test_vectors[i].nr);
     memset  (&key[0], TEST_MAGIC, sizeof(key));
     memcpy_P(&key[0], pgm_read_ptr(&test_vectors[i].key), min(sizeof(key), 4 * nk));
-    
+
     printf_P(PSTR("Test vector %d/%d for nk=%d, nr=%d (%d bits)\n"), i + 1, n, nk, nr, (uint16_t)nk * 32);
 
     bool test_ok = true;
@@ -195,18 +312,20 @@ bool test_expansion()
       return false;
     }
 
-    for (uint8_t j = 0; j < 8; j++)
+    for (uint8_t j = 0; j < 12; j++)
     {
       test_ok = true;
       uint8_t test_case = 0; //none
       const char *fname = PSTR("None");
-      uint8_t wrapped_params=0;
+      uint8_t wrapped_params = 0;
 
       memset(&xtest[0], TEST_MAGIC, sizeof(xtest));
       memset(&testblock[0], TEST_MAGIC, sizeof(testblock));
+
 #ifdef AES_BENCHMARK
       cli();
-      TCNT1=0;
+      TCNT1 = 0;
+      TIFR1 = _BV(OCF1A) | _BV(TOV1);
 #endif
       switch (j)
       {
@@ -279,7 +398,7 @@ bool test_expansion()
           {
             AES_ExpandLastKey128_T(&key[0], &key[0]);
             fname = PSTR("AES_ExpandLastKey128_T");
-            test_case=2;
+            test_case = 2;
           }
           break;
 
@@ -287,10 +406,10 @@ bool test_expansion()
         case 5:
           if (nk == 4)
           {
-            memcpy_P(&key[0],pgm_read_ptr(&test_vectors[i].lastkey),4*nk);
+            memcpy_P(&key[0], pgm_read_ptr(&test_vectors[i].lastkey), 4 * nk);
             AES_ExpandFirstKey128_T(&key[0], &key[0]);
             fname = PSTR("AES_ExpandFirstKey128_T");
-            test_case=3;
+            test_case = 3;
           }
           break;
 
@@ -307,29 +426,67 @@ bool test_expansion()
         case 7:
           if (nk == 4)
           {
-            memcpy_P(&key[0],pgm_read_ptr(&test_vectors[i].lastkey),4*nk);
+            memcpy_P(&key[0], pgm_read_ptr(&test_vectors[i].lastkey), 4 * nk);
             AES_Decrypt128_T(&testblock[0], &testblock[0], &key[0]);
             fname = PSTR("AES_Decrypt128_T");
             test_case = 3;
           }
           break;
+#ifdef AES_NANO
+        // Nano Code - forward key expansion
+        case 8:
+          if (nk == 4)
+          {
+            AES_ExpandLastKey128_N(&key[0]);
+            fname = PSTR("AES_ExpandLastKey128_N");
+            test_case = 2;
+          }
+          break;
+
+        // Nano Code - reverse key expansion
+        case 9:
+          if (nk == 4)
+          {
+            memcpy_P(&key[0], pgm_read_ptr(&test_vectors[i].lastkey), 4 * nk);
+            AES_ExpandFirstKey128_N(&key[0]);
+            fname = PSTR("AES_ExpandFirstKey128_N");
+            test_case = 3;
+          }
+          break;
+
+        // Nano Code - encryption (also forward key expansion)
+        case 10:
+          if (nk == 4)
+          {
+            AES_Encrypt128_N(&testblock[0], &key[0]);
+            fname = PSTR("AES_Encrypt128_N");
+            test_case = 2;
+          }
+          break;
+        // Nano Code - decryption (also reverse key expansion)
+        case 11:
+          if (nk == 4)
+          {
+            memcpy_P(&key[0], pgm_read_ptr(&test_vectors[i].lastkey), 4 * nk);
+            AES_Decrypt128_N(&testblock[0], &key[0]);
+            fname = PSTR("AES_Decrypt128_N");
+            test_case = 3;
+          }
+          break;
+#endif //AES_NANO
       }
 #ifdef AES_BENCHMARK
+      tifr1 = TIFR1;
       sei();
 #endif
-      
-      strncpy_P(fname_buf, fname, sizeof(fname_buf));
-      //Serial.print(fname_buf);
-      //Serial.print(", case=");
-      //Serial.println(test_case);
-      //delay(100);
+
       switch (test_case)
       {
         //Full compare
         case 1:
           if (memcmp(&xkey[0], &xtest[0], sizeof(xtest)))
           {
-            printf_P(PSTR("%-23s: FAILED\n"), fname_buf);
+            printf_P(PSTR("%-23S: FAILED\n"), fname);
             test_ok = false;
 
             printf_P(PSTR("List of differences\n"));
@@ -340,10 +497,10 @@ bool test_expansion()
           else
           {
 #ifdef AES_BENCHMARK
-            printf_P(PSTR("%-23s: OK, "), fname_buf);
-	          print_cycles(wrapped_params);
+            printf_P(PSTR("%-23S: OK, "), fname);
+            print_cycles(wrapped_params);
 #else
-            printf_P(PSTR("%-23s: OK\n"), fname_buf);
+            printf_P(PSTR("%-23S: OK\n"), fname);
 #endif
           }
           break;
@@ -355,7 +512,7 @@ bool test_expansion()
             ptr = (const uint8_t *)pgm_read_ptr(&test_vectors[i].lastkey);
           else
             ptr = (const uint8_t *)pgm_read_ptr(&test_vectors[i].key);
-          
+
           if (memcmp_P(&key[0], ptr , 4 * nk))
             test_ok = false;
           for (uint8_t x = nk * 4; x < sizeof(key); x++)
@@ -364,21 +521,21 @@ bool test_expansion()
           if (test_ok)
           {
 #ifdef AES_BENCHMARK
-            printf_P(PSTR("%-23s: OK, "), fname_buf);
-	          print_cycles(wrapped_params);
+            printf_P(PSTR("%-23S: OK, "), fname);
+            print_cycles(wrapped_params);
 #else
-            printf_P(PSTR("%-23s: OK\n"), fname_buf);
+            printf_P(PSTR("%-23S: OK\n"), fname);
 #endif
           }
           else
           {
-            printf_P(PSTR("%-23s: FAILED\n"), fname_buf);
+            printf_P(PSTR("%-23S: FAILED\n"), fname);
             test_ok = false;
 
             printf_P(PSTR("List of differences\n"));
             for (uint8_t x = 0; x < nk * 4; x++)
             {
-              uint8_t y = pgm_read_byte(ptr+x);
+              uint8_t y = pgm_read_byte(ptr + x);
               if (key[x] != y)
                 printf_P(PSTR("%03x: %02x %02x\n"), x, key[x], y);
             }
@@ -389,84 +546,85 @@ bool test_expansion()
       }
       ok &= test_ok;
     }
-    printf("\n");
+    printf_P(PSTR("\n"));
   }
   return ok;
 }
 
 bool test_encryption()
 {
-  uint8_t plaintext[AES_BLOCKSIZE],ciphertext[AES_BLOCKSIZE],outblock[AES_BLOCKSIZE];
+  uint8_t plaintext[AES_BLOCKSIZE], ciphertext[AES_BLOCKSIZE], outblock[AES_BLOCKSIZE];
   uint8_t xkey [AES256_XKEYSIZE];
-  char    fname_buf[24];
   uint8_t nk, nr;
   uint8_t n = sizeof(test_vectors) / sizeof(test_vectors[0]);
   const uint8_t *ptr;
 
   printf_P(PSTR("< << <<< <<<< <<<<< <<<<<< ENCRYPTION/DECRYPTION >>>>>> >>>>> >>>> >>> >> >\n\n"));
-  
+
   bool ok = true;
   for (uint8_t i = 0; i < n; i++)
   {
     nk = pgm_read_byte(&test_vectors[i].nk);
     nr = pgm_read_byte(&test_vectors[i].nr);
 
-    
+
     memcpy_P(&plaintext [0], pgm_read_ptr(&test_vectors[i].plaintext ), sizeof(plaintext));
     memcpy_P(&ciphertext[0], pgm_read_ptr(&test_vectors[i].ciphertext), sizeof(ciphertext));
-    
+
     printf_P(PSTR("Test vector %d/%d for nk=%d, nr=%d (%d bits)\n"), i + 1, n, nk, nr, (uint16_t)nk * 32);
 
     bool test_ok = true;
 
-    for (uint8_t j=0;j<10;j++)
+    for (uint8_t j = 0; j < 12; j++)
     {
       const char *fname = PSTR("None");
       test_ok = true;
       uint8_t test_case = 0;
-      uint8_t wrapped_params=0;
+      uint8_t wrapped_params = 0;
 
-      memcpy_P(&xkey[0], pgm_read_ptr(&test_vectors[i].key), min(sizeof(xkey), 4 * nk));  
+      memcpy_P(&xkey[0], pgm_read_ptr(&test_vectors[i].key), min(sizeof(xkey), 4 * nk));
       TestAES_ExpandKey(&xkey[0], &xkey[0], nk, nr); //Slow but good
-      memset(&outblock[0],TEST_MAGIC,sizeof(outblock));
+      memset(&outblock[0], TEST_MAGIC, sizeof(outblock));
 #ifdef AES_BENCHMARK
       cli();
+      TCNT1 = 0;
+      TIFR1 = _BV(OCF1A) | _BV(TOV1);
 #endif
-      TCNT1=0;
+
       switch (j)
       {
         case 0:
-          AES_Encrypt_F(&plaintext[0],&outblock[0],&xkey[0],nr);
+          AES_Encrypt_F(&plaintext[0], &outblock[0], &xkey[0], nr);
           fname = PSTR("AES_Encrypt_F");
           test_case = 1;
           break;
 
-#ifdef TEST_RAM          
+#ifdef TEST_RAM
         case 1:
-          AES_Encrypt_R(&plaintext[0],&outblock[0],&xkey[0],nr);
+          AES_Encrypt_R(&plaintext[0], &outblock[0], &xkey[0], nr);
           fname = PSTR("AES_Encrypt_R");
           test_case = 1;
           break;
 #endif
-          
+
         case 2:
           if (nk == 4)
           {
-            AES_Encrypt128_F(&plaintext[0],&outblock[0],&xkey[0]);
+            AES_Encrypt128_F(&plaintext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Encrypt128_F");
             wrapped_params = 1;
             test_case = 1;
           }
           else if (nk == 6)
           {
-            AES_Encrypt192_F(&plaintext[0],&outblock[0],&xkey[0]);
+            AES_Encrypt192_F(&plaintext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Encrypt192_F");
             wrapped_params = 1;
             test_case = 1;
           }
           else if (nk == 8)
           {
-            AES_Encrypt256_F(&plaintext[0],&outblock[0],&xkey[0]);
+            AES_Encrypt256_F(&plaintext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Encrypt256_F");
             wrapped_params = 1;
             test_case = 1;
@@ -477,21 +635,21 @@ bool test_encryption()
         case 3:
           if (nk == 4)
           {
-            AES_Encrypt128_R(&plaintext[0],&outblock[0],&xkey[0]);
+            AES_Encrypt128_R(&plaintext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Encrypt128_R");
             wrapped_params = 1;
             test_case = 1;
           }
           else if (nk == 6)
           {
-            AES_Encrypt192_R(&plaintext[0],&outblock[0],&xkey[0]);
+            AES_Encrypt192_R(&plaintext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Encrypt192_R");
             wrapped_params = 1;
             test_case = 1;
           }
           else if (nk == 8)
           {
-            AES_Encrypt256_R(&plaintext[0],&outblock[0],&xkey[0]);
+            AES_Encrypt256_R(&plaintext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Encrypt256_R");
             wrapped_params = 1;
             test_case = 1;
@@ -502,122 +660,142 @@ bool test_encryption()
         case 4:
           if (nk == 4)
           {
-            AES_Encrypt128_T(&plaintext[0],&outblock[0],&xkey[0]);
+            AES_Encrypt128_T(&plaintext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Encrypt_T");
             test_case = 1;
           }
           break;
 
         case 5:
-          AES_Decrypt_F(&ciphertext[0],&outblock[0],&xkey[0],nr);
+          AES_Decrypt_F(&ciphertext[0], &outblock[0], &xkey[0], nr);
           fname = PSTR("AES_Decrypt_F");
           test_case = 2;
           break;
 
-#ifdef TEST_RAM          
+#ifdef TEST_RAM
         case 6:
-          AES_Decrypt_R(&ciphertext[0],&outblock[0],&xkey[0],nr);
+          AES_Decrypt_R(&ciphertext[0], &outblock[0], &xkey[0], nr);
           fname = PSTR("AES_Decrypt_R");
           test_case = 2;
           break;
 #endif
-          
+
         case 7:
           if (nk == 4)
           {
-            AES_Decrypt128_F(&ciphertext[0],&outblock[0],&xkey[0]);
+            AES_Decrypt128_F(&ciphertext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Decrypt128_F");
             test_case = 2;
           }
           else if (nk == 6)
           {
-            AES_Decrypt192_F(&ciphertext[0],&outblock[0],&xkey[0]);
+            AES_Decrypt192_F(&ciphertext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Decrypt192_F");
             test_case = 2;
           }
           else if (nk == 8)
           {
-            AES_Decrypt256_F(&ciphertext[0],&outblock[0],&xkey[0]);
+            AES_Decrypt256_F(&ciphertext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Decrypt256_F");
             test_case = 2;
           }
           break;
 
-#ifdef TEST_RAM          
+#ifdef TEST_RAM
         case 8:
           if (nk == 4)
           {
-            AES_Decrypt128_R(&ciphertext[0],&outblock[0],&xkey[0]);
+            AES_Decrypt128_R(&ciphertext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Decrypt128_R");
             test_case = 2;
           }
           else if (nk == 6)
           {
-            AES_Decrypt192_R(&ciphertext[0],&outblock[0],&xkey[0]);
+            AES_Decrypt192_R(&ciphertext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Decrypt192_R");
             test_case = 2;
           }
           else if (nk == 8)
           {
-            AES_Decrypt256_R(&ciphertext[0],&outblock[0],&xkey[0]);
+            AES_Decrypt256_R(&ciphertext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Decrypt256_R");
             test_case = 2;
           }
           break;
 #endif
-          
+
         case 9:
           if (nk == 4)
           {
-            AES_ExpandLastKey128_T(&xkey[0],&xkey[0]); //Example how to use 
-            AES_Decrypt128_T(&ciphertext[0],&outblock[0],&xkey[0]);
+            AES_ExpandLastKey128_T(&xkey[0], &xkey[0]); //Example how to use
+            AES_Decrypt128_T(&ciphertext[0], &outblock[0], &xkey[0]);
             fname = PSTR("AES_Decrypt_T");
             test_case = 2;
           }
           break;
+#ifdef AES_NANO
+        case 10:
+          if (nk == 4)
+          {
+            memcpy(&outblock[0], &plaintext[0], sizeof(outblock));
+            AES_Encrypt128_N( &outblock[0], &xkey[0]);
+            fname = PSTR("AES_Encrypt128_N");
+            test_case = 1;
+          }
+          break;
+        case 11:
+          if (nk == 4)
+          {
+            memcpy(&outblock[0], &ciphertext[0], sizeof(outblock));
+            AES_ExpandLastKey128_N(&xkey[0]); //Example how to use
+            AES_Decrypt128_N( &outblock[0], &xkey[0]);
+            fname = PSTR("AES_Decrypt128_N");
+            test_case = 2;
+          }
+          break;
+#endif
       }
-#ifdef AES_BENCHMARK      
+#ifdef AES_BENCHMARK
+      tifr1 = TIFR1;
       sei();
-#endif      
-      strncpy_P(fname_buf, fname, sizeof(fname_buf));  
-      
+#endif
       if (test_case)
       {
         if (test_case == 1)
           ptr = pgm_read_ptr(&test_vectors[i].ciphertext);
         else
           ptr = pgm_read_ptr(&test_vectors[i].plaintext);
-        
-        if (memcmp_P(&outblock[0],ptr,AES_BLOCKSIZE))
+
+        if (memcmp_P(&outblock[0], ptr, AES_BLOCKSIZE))
         {
-          printf_P(PSTR("%-23s: FAILED\n"), fname_buf);
+          printf_P(PSTR("%-23S: FAILED\n"), fname);
           test_ok = false;
 
           printf_P(PSTR("List of differences\n"));
-          for (uint16_t x=0; x< AES_BLOCKSIZE;x++)
+          for (uint16_t x = 0; x < AES_BLOCKSIZE; x++)
           {
-              uint8_t y = pgm_read_byte(ptr+x);
-              if (outblock[x] != y)
-                printf_P(PSTR("%03x: %02x %02x\n"), x, outblock[x], y);
+            uint8_t y = pgm_read_byte(ptr + x);
+            if (outblock[x] != y)
+              printf_P(PSTR("%03x: %02x %02x\n"), x, outblock[x], y);
           }
         }
         else
         {
 #ifdef AES_BENCHMARK
-          printf_P(PSTR("%-23s: OK, "), fname_buf);
+          printf_P(PSTR("%-23S: OK, "), fname);
           print_cycles(wrapped_params);
 #else
-          printf_P(PSTR("%-23s: OK\n"), fname_buf);
+          printf_P(PSTR("%-23S: OK\n"), fname);
 #endif
         }
       }
       ok &= test_ok;
     }
-    printf("\n");
+    printf_P(PSTR("\n"));
   }
   return ok;
-}    
-      
+}
+
 
 uint32_t rev(const uint8_t *x)
 {
@@ -628,7 +806,16 @@ uint32_t rev(const uint8_t *x)
 
 }
 
-
+void dumpstate(uint8_t *p, const char *t)
+{
+  printf_P(PSTR("%S\n"), t);
+  for (uint8_t y = 0; y < 4; y++)
+  {
+    for (uint8_t x = 0; x < 4; x++)
+      printf_P(PSTR("%02x "), p[y + 4 * x]);
+    printf_P(PSTR("\n"));
+  }
+}
 
 // Use more programmer-friendly I/O
 // https://www.nongnu.org/avr-libc/user-manual/group__avr__stdio.html
@@ -653,33 +840,36 @@ void setup() {
   stdout = &mystdout ;
 
   printf_P(PSTR("\n\n"
-    "[ [[ [[[ [[[[ [[[[[ [[[[[[ [[[[[[[ START ]]]]]]] ]]]]]] ]]]]] ]]]] ]]] ]] ]\n\n"
-    " AVR-AES-Faster test sketch (c) 2020 Radosław Gancarz\n\n"
-#ifndef AES_BENCHMARK    
-    " Hint: Set AES_BENCHMARK in AVR-AES-Faster-devel.h and rebuild to see\n"
-    "       timing information for low level part (inccluding C/C++ ABI\n"
-    "       overhead)\n\n"
-#endif    
-    ));
-
-#ifdef TEST_RAM
-  //Make *_R function work
-  memcpy_P(AES_SBox_R   , AES_SBox_F   , sizeof(AES_SBox_R   ));
-  memcpy_P(AES_InvSBox_R, AES_InvSBox_F, sizeof(AES_InvSBox_R));
+                "[ [[ [[[ [[[[ [[[[[ [[[[[[ [[[[[[[ START ]]]]]]] ]]]]]] ]]]]] ]]]] ]]] ]] ]\n\n"
+                " AVR-AES-Faster test sketch (c) 2020 Radosław Gancarz\n\n"
+#ifndef AES_BENCHMARK
+                " Hint: Set AES_BENCHMARK in AVR-AES-Faster-devel.h and rebuild to see\n"
+                "       timing information for low level part (including C/C++ ABI\n"
+                "       overhead)\n\n"
 #endif
+               ));
 
 #ifdef AES_BENCHMARK
   //Use timer1 for benchmarking
   TCCR1A = 0;
   TCCR1B = _BV(WGM12) | _BV(CS10) ; //CTC mode, CLK/1
+  //TCCR1B = _BV(WGM12) | _BV(CS11) ; //CTC mode, CLK/8
+  //TCCR1B = _BV(WGM12) | _BV(CS10) | _BV(CS11) ; //CTC mode, CLK/64
   TIMSK1 = 0;
   OCR1A = 0xffff; //0xff;
 #endif
 
   bool ok = true;
+#ifdef TEST_RAM
+  //Test table expansion
+  ok &= test_tables();
+  //Use known good values
+  memcpy_P(AES_SBox_R   , AES_SBox_F   , sizeof(AES_SBox_R   ));
+  memcpy_P(AES_InvSBox_R, AES_InvSBox_F, sizeof(AES_InvSBox_R));
+#endif //TEST_RAM
   ok &= test_expansion();
-  ok &= test_encryption(); 
-  
+  ok &= test_encryption();
+
   if (ok)
     printf_P(PSTR("+ ++ +++ ++++ +++++ ++ ALL TEST PASSED SUCCESSFULLY! ++ +++++ ++++ +++ ++ +\n\n"));
   else
@@ -687,6 +877,9 @@ void setup() {
 #ifdef AES_BENCHMARK
   print_sizes();
 #endif
+
+  printf_P(PSTR("END OF PROGRAM\n"));
 }
+
 
 void loop() {}
